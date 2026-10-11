@@ -12,7 +12,7 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 50
-    username: saksham
+    username: anuj
     password: password
     driver-class-name: org.postgresql.Driver
   data:
@@ -45,11 +45,33 @@ management:
     web:
       exposure:
         include: health,info,prometheus
-        
+  tracing:
+    sampling:
+      probability: 0.1
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+feign:
+  httpclient:
+    hc5:
+      enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
 logging:
   level:
     org.apache.kafka.clients: WARN
     org.apache.kafka.common: WARN
+    zipkin2.reporter: DEBUG
+    org.springframework.boot.zipkin: DEBUG
+    io.micrometer.tracing: DEBUG
 
 app:
   kafka:
@@ -58,42 +80,4 @@ app:
       order: orders.events
       refund: refund.events
       settlement: settlement.events
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: k8s
-  data:
-    redis:
-      host: redis.razorpay-core.svc.cluster.local
-      port: 6379
-  kafka:
-    bootstrap-servers: kafka.razorpay-core.svc.cluster.local:9092
-  cloud:
-    discovery:
-      enabled: false
-  task:
-    scheduling:
-      pool:
-        size: 4
-
-eureka:
-  client:
-    enabled: false
-    register-with-eureka: false
-    fetch-registry: false
-
-management:
-  zipkin:
-    tracing:
-      endpoint: http://zipkin.razorpay-core.svc.cluster.local:9411/api/v2/spans
-
-MERCHANT_SERVICE_URI: http://merchant-service
-PAYMENT_SERVICE_URI: http://payment-service
-VAULT_SERVICE_URI: http://vault-service
-OPERATIONS_SERVICE_URI: http://operations-service
-
-
   
